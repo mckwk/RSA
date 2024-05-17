@@ -124,20 +124,20 @@ def process_image(image_path):
     with open("random_sequence_array.txt", "a") as file:
         file.write(''.join(str(pixel) for pixel in random_sequence_array))
 
-def divide_into_8bit(file):
+def divide_into_bits(file, bits):
     with open(file, 'r') as file:
         binary_sequence = file.read().strip()
 
-    # Check if the length of the sequence is divisible by 8
-    if len(binary_sequence) % 8 != 0:
-        raise ValueError("Sequence length is not divisible by 8.")
+    # Check if the length of the sequence is divisible by bits
+    if len(binary_sequence) % bits != 0:
+        raise ValueError("Sequence length is not divisible by bits.")
 
     # Divide the sequence into 8-bit segments and convert each segment to an integer
-    eight_bit_integers = [
-        int(binary_sequence[i:i+8], 2) for i in range(0, len(binary_sequence), 8)
+    integers = [
+        int(binary_sequence[i:i+bits], 2) for i in range(0, len(binary_sequence), bits)
     ]
 
-    return eight_bit_integers
+    return integers
 
 def histograms(extractor_array, post_processed_array):
     plt.hist(post_processed_array, bins=range(256), color="blue", density=True)
@@ -155,8 +155,8 @@ def histograms(extractor_array, post_processed_array):
 
 def singleProcessing(image):
     process_image(image)
-    extractor_array = divide_into_8bit("binary_image.txt")
-    post_processed_array = divide_into_8bit("random_sequence_array.txt")
+    extractor_array = divide_into_bits("binary_image.txt", 8)
+    post_processed_array = divide_into_bits("random_sequence_array.txt", 8)
     entropy_value = entropy(np.histogram(post_processed_array, bins=range(256), density=True)[0])
     print("Entropy:", entropy_value)
 
@@ -168,8 +168,8 @@ def multiProcessing(dir):
     # Process each image
     for file_path in file_paths:
         process_image(file_path)
-    extractor_array = divide_into_8bit("binary_image.txt")
-    post_processed_array = divide_into_8bit("random_sequence_array.txt")
+    extractor_array = divide_into_bits("binary_image.txt", 8)
+    post_processed_array = divide_into_bits("random_sequence_array.txt", 8)
     entropy_value = entropy(np.histogram(post_processed_array, bins=range(256), density=True)[0])
     print("Entropy:", entropy_value)
 
@@ -189,3 +189,5 @@ def main():
 
     duration = stop_time - start_time
     print("Czas trwania:", duration, "sekund")
+
+
