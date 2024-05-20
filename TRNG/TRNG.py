@@ -108,7 +108,11 @@ def entropy(probabilities):
     return -np.sum(probabilities * np.log2(probabilities))
 
 
-def process_image(image_path):
+def process_image(image_path, mode, out_file_prefix=""):
+    if mode=="single":
+        write_mode = "w"
+    else:
+        write_mode = "a"
     binary_image = transform_to_binary(image_path)
     binary_image_str = ''.join(str(pixel) for pixel in binary_image.flatten()).replace("255", "1")
     shuffled_image = arnold_cat_map(binary_image)
@@ -118,10 +122,10 @@ def process_image(image_path):
     random_sequence_array = np.array(zigzag_sequence)
     
 
-    with open("binary_image.txt", "a") as file:
+    with open(out_file_prefix + "binary_image.txt", write_mode) as file:
         file.write(binary_image_str)
     
-    with open("random_sequence_array.txt", "a") as file:
+    with open(out_file_prefix + "random_sequence_array.txt", write_mode) as file:
         file.write(''.join(str(pixel) for pixel in random_sequence_array))
 
 def divide_into_bits(file, bits):
@@ -153,28 +157,30 @@ def histograms(extractor_array, post_processed_array):
     plt.show()
 
 
-def singleProcessing(image):
-    process_image(image)
-    extractor_array = divide_into_bits("binary_image.txt", 8)
-    post_processed_array = divide_into_bits("random_sequence_array.txt", 8)
-    entropy_value = entropy(np.histogram(post_processed_array, bins=range(256), density=True)[0])
-    print("Entropy:", entropy_value)
+def TRNGSingleProcessing(image, disp_info=False):
+    process_image(image, "single")
+    
+    if disp_info==True:
+        extractor_array = divide_into_bits("binary_image.txt", 8)
+        post_processed_array = divide_into_bits("random_sequence_array.txt", 8)
+        entropy_value = entropy(np.histogram(post_processed_array, bins=range(256), density=True)[0])
+        print("Entropy:", entropy_value)
+        print("Post-processed array length:" , len(post_processed_array))
+        histograms(extractor_array, post_processed_array)
 
-    print("Post-processed array length:" , len(post_processed_array))
-    histograms(extractor_array, post_processed_array)
-
-def multiProcessing(dir):
+def multiProcessing(dir, disp_info=False):
     file_paths = [os.path.join(dir, f"{i}.jpg") for i in range(1, 9)]
     # Process each image
     for file_path in file_paths:
-        process_image(file_path)
+        process_image(file_path, "multi")
     extractor_array = divide_into_bits("binary_image.txt", 8)
     post_processed_array = divide_into_bits("random_sequence_array.txt", 8)
-    entropy_value = entropy(np.histogram(post_processed_array, bins=range(256), density=True)[0])
-    print("Entropy:", entropy_value)
 
-    print("Post-processed array length:" , len(post_processed_array))
-    histograms(extractor_array, post_processed_array)
+    if disp_info==True:
+        entropy_value = entropy(np.histogram(post_processed_array, bins=range(256), density=True)[0])
+        print("Entropy:", entropy_value)
+        print("Post-processed array length:" , len(post_processed_array))
+        histograms(extractor_array, post_processed_array)
 
 def main():
     if (os.path.exists("binary_image.txt")):
@@ -183,7 +189,7 @@ def main():
         os.remove("random_sequence_array.txt")
 
     start_time = time.time()
-    singleProcessing("kot.png")
+    TRNGSingleProcessing("kot.png")
     #multiProcessing(os.path.join(os.getcwd(), "4000") )
     stop_time = time.time()
 
