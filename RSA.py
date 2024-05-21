@@ -136,7 +136,7 @@ def wrong_pub_key(message):
 
 def main():
     # message_content_change("wiadomość pierwsza", "wiadomość druga")
-    hash_encrypt_decrypt("działa!")
+     hash_encrypt_decrypt("działa!")
     # wrong_pub_key("nie działa!")
 
 
